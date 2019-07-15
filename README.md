@@ -1,0 +1,2 @@
+# Lingo
+Duolingo CLI App
