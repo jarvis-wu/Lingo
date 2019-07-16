@@ -2,8 +2,9 @@
 # Duolingo Command Line App
 # Dependency: duolingo-api (https://github.com/KartikTalwar/Duolingo)
 
-import duolingo
 import sys
+import duolingo
+from termcolor import colored
 
 lingo = None
 username = ""
@@ -35,7 +36,7 @@ def askLogin():
 def login():
     global lingo
     lingo = duolingo.Duolingo(username, password=password)
-    print("Login successful!")
+    print(colored("Login successful!", 'green', attrs = ['bold']))
     printUserInfo()
 
 def printUserInfo():
@@ -47,10 +48,10 @@ def printUserInfo():
     waitForCommand()
 
 def waitForCommand():
-    command = input(">>> ")
+    print(colored('>>>', 'cyan', attrs = ['bold']), end=" ")
+    command = input("")
     handle(command)
     waitForCommand()
-    # or use while true?
 
 def handle(command):
     print("Command", command, "called.")
@@ -59,8 +60,26 @@ def handle(command):
     elif command == "words":
         words = lingo.get_known_words('es')
         for (index, word) in enumerate(words):
-            print(index + 1, "\t", word)
+            print(index + 1, "\t", word, "\t", "")
     elif command == "exit":
         sys.exit(0)
+    elif command.split()[0] == "related":
+        originalWord = command.split()[1]
+        relatedWords = lingo.get_related_words(originalWord)
+        for (index, word) in enumerate(relatedWords):
+            print('{}\t{:<25s}'.format(index + 1, word["word_string"]), end="\t")
+            numOfBars = round(word["strength"] * 10)
+            print(numOfBars * "*")
+    elif command == "vocabulary":
+        words = lingo.get_vocabulary()["vocab_overview"]
+        for (index, word) in enumerate(words):
+            print('{}\t{:<25s}'.format(index + 1, word["word_string"]), end="")
+            numOfBars = round(word["strength"] * 10)
+            if numOfBars <= 3:
+                print(colored(numOfBars * "*", 'red', attrs = ['bold']))
+            elif numOfBars <= 6:
+                print(colored(numOfBars * "*", 'yellow', attrs = ['bold']))
+            else:
+                print(colored(numOfBars * "*", 'green', attrs = ['bold']))
 
 welcome()
