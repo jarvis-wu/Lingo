@@ -5,6 +5,7 @@
 import sys
 import duolingo
 from termcolor import colored
+import getpass
 
 lingo = None
 username = ""
@@ -16,14 +17,14 @@ def welcome():
 
 def getCredentials():
     global username, password
-    username = input("Enter your username: ")
-    password = input("Enter your password: ")
+    username = input(colored("Enter your username >>> ", 'cyan', attrs = ['bold']))
+    password = getpass.getpass(prompt = colored("Enter your password >>> ", 'cyan', attrs = ['bold']))
     askLogin()
 
 def askLogin():
     yes = {'yes','y', 'ye', ''}
     no = {'no','n'}
-    choice = input("Do you want to log in? [y/n]: ").lower()
+    choice = input(colored("Do you want to log in? [y/n] >>> ", 'cyan', attrs = ['bold'])).lower()
     if choice in yes:
         login()
     elif choice in no:
@@ -48,15 +49,16 @@ def printUserInfo():
     waitForCommand()
 
 def waitForCommand():
-    print(colored('>>>', 'cyan', attrs = ['bold']), end=" ")
-    command = input("")
+    command = input(colored('>>> ', 'cyan', attrs = ['bold']))
     handle(command)
     waitForCommand()
 
 def handle(command):
     print("Command", command, "called.")
     if command == "help":
-        print("Try one of the following commands: words, exit")
+        print("Try one of the following commands: words, related, vocabulary, exit")
+    elif command == "version":
+        print("Lingo v0.1 2019")
     elif command == "words":
         words = lingo.get_known_words('es')
         for (index, word) in enumerate(words):
@@ -66,20 +68,20 @@ def handle(command):
     elif command.split()[0] == "related":
         originalWord = command.split()[1]
         relatedWords = lingo.get_related_words(originalWord)
-        for (index, word) in enumerate(relatedWords):
-            print('{}\t{:<25s}'.format(index + 1, word["word_string"]), end="\t")
-            numOfBars = round(word["strength"] * 10)
-            print(numOfBars * "*")
+        printWordList(relatedWords)
     elif command == "vocabulary":
         words = lingo.get_vocabulary()["vocab_overview"]
-        for (index, word) in enumerate(words):
-            print('{}\t{:<25s}'.format(index + 1, word["word_string"]), end="")
-            numOfBars = round(word["strength"] * 10)
-            if numOfBars <= 3:
-                print(colored(numOfBars * "*", 'red', attrs = ['bold']))
-            elif numOfBars <= 6:
-                print(colored(numOfBars * "*", 'yellow', attrs = ['bold']))
-            else:
-                print(colored(numOfBars * "*", 'green', attrs = ['bold']))
+        printWordList(words)
+
+def printWordList(words):
+    for (index, word) in enumerate(words):
+        print('{}\t{:<25s}'.format(index + 1, word["word_string"]), end="")
+        numOfBars = round(word["strength"] * 10)
+        if numOfBars <= 4:
+            print(colored(numOfBars * "*", 'red', attrs = ['bold']))
+        elif numOfBars <= 7:
+            print(colored(numOfBars * "*", 'yellow', attrs = ['bold']))
+        else:
+            print(colored(numOfBars * "*", 'green', attrs = ['bold']))
 
 welcome()
